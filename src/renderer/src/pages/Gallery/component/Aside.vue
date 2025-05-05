@@ -1,0 +1,169 @@
+<template>
+  <el-aside class="border-el !border-1" width="200px">
+    <el-scrollbar height="580px" class="h-auto" always>
+      <div v-if="isEmpty(groupTags) && isEmpty(unGroupTags)" class="p-12 text-align-center">
+        <el-text type="info">暂无分组数据</el-text>
+      </div>
+
+      <template v-else>
+        <!-- 未分组置顶 -->
+        <el-collapse class="border-t-0">
+          <el-collapse-item>
+            <template #title>
+              <div class="flex justify-between items-center w-full mx-4">未分组</div>
+            </template>
+            <div class="flex gap-2 flex-wrap px-2">
+              <el-tag
+                v-for="tag in unGroupTags"
+                :key="tag.$loki"
+                :type="searchTags && searchTags.includes(tag.name) ? 'primary' : 'info'"
+                class="cursor-pointer"
+                @click="toggleTag(tag)"
+              >
+                {{ tag.name }}
+              </el-tag>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+
+        <el-collapse class="w-full h-auto border-t-0">
+          <VueDraggable
+            v-model="groupTags"
+            :animation="150"
+            target=".sort-target"
+            @start="draging = true"
+            @sort="onSort"
+          >
+            <TransitionGroup
+              type="transition"
+              :name="!draging ? 'fade' : undefined"
+              tag="div"
+              class="sort-target"
+            >
+              <el-collapse-item v-for="group in groupTags" :key="group.$loki" :title="group.name">
+                <template #title>
+                  <div class="flex justify-between items-center w-full mx-4">
+                    {{ group.name }}
+                  </div>
+                </template>
+                <div class="flex gap-2 flex-wrap px-2">
+                  <el-tag
+                    v-for="tag in group.tags"
+                    :key="tag.$loki"
+                    :type="searchTags && searchTags.includes(tag.name) ? 'primary' : 'info'"
+                    class="cursor-pointer"
+                    @click="toggleTag(tag)"
+                  >
+                    {{ tag.name }}
+                  </el-tag>
+                </div>
+              </el-collapse-item>
+            </TransitionGroup>
+          </VueDraggable>
+        </el-collapse>
+      </template>
+    </el-scrollbar>
+  </el-aside>
+</template>
+
+<script setup>
+import { ref, onMounted, nextTick, computed } from 'vue'
+import { ElMessage } from 'element-plus'
+import { cloneDeep, isEmpty } from 'lodash'
+import { VueDraggable } from 'vue-draggable-plus'
+
+defineProps({
+  searchTags: Array
+})
+
+// 初始化数据加载
+onMounted(() => {
+  fetchGroupTagsData()
+  fetchUnGroupTagsData()
+})
+
+const groupTags = ref([])
+const unGroupTags = ref([])
+const draging = ref(false)
+
+/**
+ * 获取分组标签数据
+ */
+function fetchGroupTagsData() {
+  window.electron.ipcRenderer
+    .invoke('db:get-groups', {
+      currentPage: 1,
+      pageSize: 9999,
+      sortBy: { prop: 'index', order: 'asc' },
+      joinTag: true
+    })
+    .then((result) => {
+      if (result.isSuccess) {
+        groupTags.value = result.data.list
+      } else {
+        ElMessage.error('加载数据失败')
+      }
+    })
+}
+function fetchUnGroupTagsData() {
+  window.electron.ipcRenderer.invoke('db:get-unc-tags').then((result) => {
+    if (result.isSuccess) {
+      unGroupTags.value = result.data
+    } else {
+      ElMessage.error('加载数据失败')
+    }
+  })
+}
+
+function toggleTag(tag) {
+  emit('toggleTag', tag.name)
+}
+function onSort() {
+  groupTags.value.forEach((group, index) => {
+    group.index = index
+  })
+  window.electron.ipcRenderer
+    .invoke('db:update-groups-index', cloneDeep(groupTags.value))
+    .then((result) => {
+      if (!result.isSuccess) {
+        ElMessage.error('保存排序信息失败')
+        console.log(result.data)
+      }
+    })
+  nextTick(() => {
+    draging.value = false
+  })
+}
+
+const emit = defineEmits(['toggleTag'])
+</script>
+
+<style scoped>
+/* 分组列表宽度 */
+.el-collapse {
+  --el-collapse-header-height: 38px;
+}
+
+/* drag */
+.fade-move,
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: scaleY(0.01) translate(30px, 0);
+}
+
+.fade-leave-active {
+  position: absolute;
+}
+
+.sortable-drag {
+  opacity: 1;
+  border: 1px dashed #409eff;
+  transform: scale(0.95);
+}
+</style>
