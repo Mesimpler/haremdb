@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import fse from 'fs-extra'
+import { copy } from 'fs-extra'
 import { app } from 'electron'
 import path from 'path'
 import { is } from '@electron-toolkit/utils'
@@ -58,6 +58,8 @@ export function collectTheKey(obj, keysToCollect) {
 /**
  * 将文件复制到DB中管理
  * @param {String} filePath 待复制文件
+ *
+ * fs-extra doc: https://github.com/jprichardson/node-fs-extra
  */
 export async function createDBhostFile(filePath) {
   const uniqueFileName = `hdb_${Date.now()}_${Math.floor(Math.random() * 1000)}${path.extname(filePath)}`
@@ -70,5 +72,8 @@ export async function createDBhostFile(filePath) {
     fileRepoPath = path.join(exeDir, 'repo', uniqueFileName)
   }
 
-  await fse.copy(filePath, fileRepoPath)
+  await copy(filePath, fileRepoPath)
+  console.log(fileRepoPath)
+
+  return fileRepoPath
 }

@@ -35,6 +35,17 @@ app.whenReady().then(async () => {
       module.default(ipcMain, mainWindow, db)
     }
   })
+
+  // 主题切换支持
+  ipcMain.on('changeWinbar', async (event, options) => {
+    mainWindow.setTitleBarOverlay(options)
+  })
+
+  // 等待首屏加载延迟
+  setTimeout(() => {
+    mainWindow.show()
+  }, 3000)
+
   // protocol
   protocol.handle('local-resource', async (request) => {
     const decodedUrl = decodeURIComponent(

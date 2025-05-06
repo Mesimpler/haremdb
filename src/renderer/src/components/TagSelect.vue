@@ -40,7 +40,7 @@ function fetchData() {
 
 function getReadableGroups(groups) {
   const arr = groups.map((group) => group.name)
-  return arr.join()
+  return arr.join(', ')
 }
 
 onMounted(() => {

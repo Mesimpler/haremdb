@@ -1,5 +1,6 @@
 import { useClosure, createDBhostFile } from '../utils'
 import _ from 'lodash'
+import { remove } from 'fs-extra'
 
 // =======================================
 // lokijs
@@ -50,9 +51,9 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         let sort = [['$loki', false]] // 默认按ID降序
         if (sortBy) {
           if (Array.isArray(sortBy) && sortBy.length > 0) {
-            sort = sortBy.map((item) => [item.prop, item.order === 'desc'])
+            sort = sortBy.map((item) => [item.prop, item.order === 'descending'])
           } else if (typeof sortBy === 'object' && sortBy !== null && !Array.isArray(sortBy)) {
-            sort = [[sortBy.prop, sortBy.order === 'desc']]
+            sort = [[sortBy.prop, sortBy.order === 'descending']]
           }
         }
 
@@ -98,10 +99,14 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         data: null
       }
     } catch (error) {
+      let readableErrorMsg = '添加分组操作失败'
+      if (error.toString().includes('Duplicate key')) {
+        readableErrorMsg = '分组名称已存在：' + addGroup.name
+      }
       console.error(error)
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: readableErrorMsg,
         data: error
       }
     }
@@ -207,9 +212,9 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         let sort = [['$loki', false]] // 默认按ID降序
         if (sortBy) {
           if (Array.isArray(sortBy) && sortBy.length > 0) {
-            sort = sortBy.map((item) => [item.prop, item.order === 'desc'])
+            sort = sortBy.map((item) => [item.prop, item.order === 'descending'])
           } else if (typeof sortBy === 'object' && sortBy !== null && !Array.isArray(sortBy)) {
-            sort = [[sortBy.prop, sortBy.order === 'desc']]
+            sort = [[sortBy.prop, sortBy.order === 'descending']]
           }
         }
 
@@ -358,27 +363,43 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
   // 新增图像
   ipcMain.handle('db:add-image', async (event, addImage) => {
     try {
-      createDBhostFile(addImage.path)
+      const filePath = await createDBhostFile(addImage.path)
 
       const addedImage = imagesCol().insert({
         name: addImage.name,
-        path: addImage.path,
+        path: filePath,
         size: addImage.size,
         remark: addImage.remark
       })
 
-      // 如果传入了 tagIds , 建立关联
+      // 如果传入 tags , 先将新建的 tags 进行创建，再统一进行关联
       if (!_.isEmpty(addImage.tags)) {
-        const updateImageTags = addImage.tags.map((tag) => {
-          return { image_id: addedImage.$loki, tag_id: tag.$loki }
-        })
-        imageTagsCol().insert(updateImageTags)
+        const grouped = _.groupBy(addImage.tags, (t) => _.isObject(t)) || {}
+        let existedTags = grouped.true || []
+        const newTagNames = grouped.false || []
+
+        console.log(existedTags)
+        console.log(newTagNames)
+
+        if (!_.isEmpty(newTagNames)) {
+          const insertTags = newTagNames.map((tagName) => {
+            return { name: tagName }
+          })
+          const insertedTags = tagsCol().insert(insertTags)
+          existedTags = _.concat(existedTags, insertedTags)
+        }
+        if (!_.isEmpty(existedTags)) {
+          const insertImageTags = existedTags.map((tag) => {
+            return { image_id: addedImage.$loki, tag_id: tag.$loki }
+          })
+          imageTagsCol().insert(insertImageTags)
+        }
       }
 
       return {
         isSuccess: true,
         msg: '操作成功',
-        data: addedImage
+        data: null
       }
     } catch (error) {
       return {
@@ -463,9 +484,9 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         let sort = [['$loki', false]] // 默认按ID降序
         if (sortBy) {
           if (Array.isArray(sortBy) && sortBy.length > 0) {
-            sort = sortBy.map((item) => [item.prop, item.order === 'desc'])
+            sort = sortBy.map((item) => [item.prop, item.order === 'descending'])
           } else if (typeof sortBy === 'object' && sortBy !== null && !Array.isArray(sortBy)) {
-            sort = [[sortBy.prop, sortBy.order === 'desc']]
+            sort = [[sortBy.prop, sortBy.order === 'descending']]
           }
         }
 
@@ -557,10 +578,11 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
   })
 
   // 删除图像
-  ipcMain.handle('db:delete-image', async (event, imageId) => {
+  ipcMain.handle('db:delete-image', async (event, { $loki: imageId, path: imagePath }) => {
     try {
       imagesCol().findAndRemove({ $loki: imageId })
       imageTagsCol().findAndRemove({ image_id: imageId })
+      remove(imagePath)
 
       return {
         isSuccess: true,

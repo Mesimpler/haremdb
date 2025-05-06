@@ -1,24 +1,31 @@
 import { shell, BrowserWindow } from 'electron'
 import { join } from 'path'
-import icon from '../../resources/icon.png?asset'
 import { is } from '@electron-toolkit/utils'
 
 export function createMainWindow() {
   const mainWindow = new BrowserWindow({
     width: 900,
-    height: 752,
+    height: 712,
     show: false,
-    autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    resizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#FFFFFF00',
+      height: 38
+    },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-  })
+  mainWindow.setMenuBarVisibility(false)
+
+  // mainWindow.on('ready-to-show', () => {
+  //   mainWindow.show()
+  // })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)

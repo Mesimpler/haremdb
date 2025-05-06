@@ -6,7 +6,7 @@ html, body, #app {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #F2F3F5;
+  background-color: var(--el-fill-color-extra-light);
 }
 
 * {
@@ -14,5 +14,9 @@ html, body, #app {
 }
 
 .border-el {
-  border: 1px solid var(--el-border-color);
+  border: var(--el-border);
+}
+
+.img-panel {
+  background-color: var(--el-fill-color-extra-light);
 }

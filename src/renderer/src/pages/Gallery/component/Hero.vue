@@ -7,7 +7,7 @@
     append-to-body
     :close-on-click-modal="true"
   >
-    <el-card shadow="never" class="w-100% mb-2" body-class="p-2 pr-3 flex bg-#FAFAFA gap-2">
+    <el-card shadow="never" class="w-100% mb-2" body-class="p-2 pr-3 flex gap-2 img-panel">
       <div class="w-140px min-h-180px h-auto flex flex-col">
         <el-image
           class="block border-el h-full"
@@ -32,7 +32,7 @@
             <template #prepend>文件名</template>
           </el-input>
           <div class="flex h-auto">
-            <el-button type="danger" plain icon="Delete" @click="onDelete(image.$loki)"></el-button>
+            <el-button type="danger" plain icon="Delete" @click="onDelete(image)"></el-button>
             <el-button type="success" plain icon="CircleCheck" @click="onSave"></el-button>
           </div>
         </div>
@@ -50,8 +50,8 @@ import { cloneDeep } from 'lodash'
 const dialogVisible = ref(false)
 const image = ref({})
 
-function onDelete(imageId) {
-  window.electron.ipcRenderer.invoke('db:delete-image', imageId).then((result) => {
+function onDelete(image) {
+  window.electron.ipcRenderer.invoke('db:delete-image', cloneDeep(image)).then((result) => {
     if (result.isSuccess) {
       dialogVisible.value = false
       ElMessage.success(result.msg)

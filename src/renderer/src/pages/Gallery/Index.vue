@@ -1,6 +1,6 @@
 <template>
   <el-config-provider size="default">
-    <el-container>
+    <el-container class="h-full">
       <el-header class="flex gap-2 items-center m-0 p-0 h-auto mb-2">
         <el-input v-model="searchName" class="w-200px" placeholder="搜索文件名" clearable />
         <el-input-tag
@@ -46,13 +46,14 @@
         </el-dropdown>
       </el-header>
 
-      <el-container>
+      <el-container class="!h-full gallery-container">
         <Aside :search-tags="searchTags" @toggle-tag="toggleTag" />
-        <el-main class="p-0 pl-2">
-          <div class="h-full w-full flex flex-col">
+        <el-main class="p-0 pl-2 h-full">
+          <div class="w-full flex flex-col">
             <div
+              v-if="images && images.length > 0"
               v-loading="galleryLoading"
-              class="w-full flex-1 grid grid-cols-5 grid-rows-3 gap-2 items-start"
+              class="w-full h-full flex-1 grid grid-cols-5 grid-rows-3 gap-2 items-start"
             >
               <div
                 v-for="img in images"
@@ -74,6 +75,7 @@
                 </div>
               </div>
             </div>
+            <el-empty v-else class="flex-1"></el-empty>
             <el-pagination
               v-model:current-page="currentPage"
               :total="totalItems"
@@ -87,7 +89,7 @@
       </el-container>
     </el-container>
 
-    <Hero ref="heroRef" @deleted="loadGalleryData" @saved="loadGalleryData" />
+    <Hero ref="heroRef" @deleted="fetchData" @saved="fetchData" />
   </el-config-provider>
 </template>
 
@@ -109,10 +111,10 @@ const currentPage = ref(1)
 const galleryLoading = ref(false)
 // 排序配置
 const sortOptions = ref({
-  selectOrder: { order: 'desc', icon: 'SortDown' },
+  selectOrder: { order: 'descending', icon: 'SortDown' },
   orders: [
-    { order: 'desc', icon: 'SortDown' },
-    { order: 'asc', icon: 'SortUp' }
+    { order: 'descending', icon: 'SortDown' },
+    { order: 'ascending', icon: 'SortUp' }
   ],
   selectProp: { label: '创建时间', prop: 'meta.created' },
   props: [
@@ -143,10 +145,19 @@ function toggleTag(tagName) {
  * @param {Object} params.sortBy - 排序方式
  * @param {string} params.search - 搜索关键词
  */
-function fetchGalleryData(queryOptions) {
+function fetchData() {
   galleryLoading.value = true
   window.electron.ipcRenderer
-    .invoke('db:get-images', cloneDeep(queryOptions))
+    .invoke(
+      'db:get-images',
+      cloneDeep({
+        currentPage: currentPage.value,
+        pageSize: pageSize.value,
+        sortBy: sortBy.value,
+        searchName: searchName.value,
+        searchTags: searchTags.value
+      })
+    )
     .then((result) => {
       if (result.isSuccess) {
         images.value = result.data.list
@@ -160,44 +171,22 @@ function fetchGalleryData(queryOptions) {
       galleryLoading.value = false
     })
 }
+const debouncedFetchData = debounce(fetchData, 250)
 /**
- * 切换排序顺序 (default -> desc -> asc -> default...)
+ * 切换排序顺序 (default -> descending -> ascending -> default...)
  */
 function switchSortOrder() {
   const orders = sortOptions.value.orders
   const currentIndex = orders.findIndex((o) => o.order === sortOptions.value.selectOrder.order)
   const nextIndex = (currentIndex + 1) % orders.length
-  //  直接赋值 selectOrder 会导致无法触发 computed
-  sortOptions.value.selectOrder.icon = orders[nextIndex].icon
-  sortOptions.value.selectOrder.order = orders[nextIndex].order
+  sortOptions.value.selectOrder = orders[nextIndex]
 }
-/**
- * 加载图库数据（封装watch中的重复逻辑）
- */
-function loadGalleryData() {
-  fetchGalleryData(
-    cloneDeep({
-      currentPage: currentPage.value,
-      pageSize: pageSize.value,
-      sortBy: sortBy.value,
-      searchName: searchName.value,
-      searchTags: searchTags.value
-    })
-  )
-}
-const debouncedSearch = debounce(loadGalleryData, 250)
 
 // 监听页码,排序字段,文件名搜索变化
 watch(
-  [
-    currentPage,
-    () => sortOptions.value.selectProp,
-    sortOptions.value.selectOrder,
-    searchTags,
-    searchName
-  ],
+  [currentPage, sortBy, searchTags, searchName],
   () => {
-    debouncedSearch()
+    debouncedFetchData()
   },
   {
     immediate: true,

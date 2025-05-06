@@ -15,13 +15,13 @@
         </div>
       </div>
 
-      <el-scrollbar max-height="450px">
+      <el-scrollbar max-height="480px">
         <el-card
           v-for="file in fileList"
           :key="file.path"
           shadow="never"
-          class="w-100% mb-2"
-          body-class="p-2 pr-3 flex bg-#FAFAFA gap-2"
+          class="w-100% mb-2 img-panel"
+          body-class="p-2 pr-3 flex gap-2"
         >
           <div class="w-140px min-h-180px h-auto flex flex-col">
             <el-image
@@ -65,7 +65,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { cloneDeep, filter, findIndex } from 'lodash'
+import _, { cloneDeep, filter } from 'lodash'
 import TagSelect from '@components/TagSelect.vue'
 import { ElMessage } from 'element-plus'
 
@@ -78,11 +78,7 @@ function openFilePicker() {
       filters: [{ name: 'Images', extensions: ['png'] }]
     })
     .then((files) => {
-      const newFiles = filter(files, (file) => {
-        const isIncluded = findIndex(fileList.value, { path: file.path }) !== -1
-        return !isIncluded
-      })
-      fileList.value = newFiles.concat(fileList.value)
+      fileList.value = _.uniq(fileList.value.concat(files), 'path')
     })
 }
 function handleDrop(event) {
@@ -91,11 +87,12 @@ function handleDrop(event) {
 }
 
 function onRemove(file) {
-  fileList.value = filter(fileList.value, function (f) {
-    return f.path !== file.path
-  })
+  fileList.value = filter(fileList.value, (f) => f.path !== file.path)
 }
 function onSave(file) {
+  // console.log(file)
+  // console.log(cloneDeep(file))
+
   window.electron.ipcRenderer.invoke('db:add-image', cloneDeep(file)).then((result) => {
     if (result.isSuccess) {
       onRemove(file)
@@ -112,7 +109,7 @@ function onSave(file) {
 .dropzone {
   width: 100%;
   height: 160px;
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--el-border-color);
   border-radius: 5px;
   display: flex;
   flex-direction: column;
@@ -122,16 +119,16 @@ function onSave(file) {
   padding: 20px;
   cursor: pointer;
   transition: all 0.3s;
+  background-color: var(--el-fill-color-extra-light);
 }
 
 .dropzone:hover,
 .dropzone.dragover {
-  border-color: #2196f3;
-  background: #f5f5f5;
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
 }
 
 .dropzone p {
-  color: #666;
   margin-bottom: 10px;
 }
 </style>

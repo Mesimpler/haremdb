@@ -1,34 +1,13 @@
-# haremdb
+### v0.0.2
 
-An Electron application with Vue
+#### bugs:
 
-## Recommended IDE Setup
+### v0.0.1
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+#### bugs:
 
-## Project Setup
-
-### Install
-
-```bash
-$ npm install
-```
-
-### Development
-
-```bash
-$ npm run dev
-```
-
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
-```
+- [x] 当未分组没有数据时依旧会显示
+- [x] 添加图片时不会自动生成未创建的标签
+- [x] 添加标签后标签管理表格中分组选择器显示失效
+- [x] 数据库中存储的图片位置依旧是原始地址，非仓库文件地址
+- [x] 进行图片删除操作后，文件仓库未进行删除

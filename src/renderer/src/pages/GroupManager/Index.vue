@@ -4,7 +4,7 @@
     sortable="custom"
     border
     style="width: 100%"
-    @sort-change="sortBy = $event"
+    @sort-change="onSortChange"
   >
     <el-table-column type="expand">
       <template #default="{ row }">
@@ -42,7 +42,7 @@
             placeholder="搜索分组名称"
             clearable
             prefix-icon="Search"
-            @input="debouncedSearch({ currentPage: 1, pageSize, sortBy, search: $event })"
+            @input="debouncedFetchData"
           />
           <el-button size="small" type="primary" @click="addFrmDialogVisible = true">
             添加分组
@@ -68,6 +68,7 @@
       :total="totalItems"
       :page-size="pageSize"
       background
+      size="default"
       layout="prev, pager, next"
     />
   </div>
@@ -100,14 +101,23 @@ const tableData = ref([])
 const tableLoading = ref(false)
 const totalItems = ref(0)
 const search = ref('')
-const sortBy = ref({ prop: 'meta.created', order: 'desc' })
-const pageSize = ref(15)
+const sortBy = ref({ prop: 'meta.created', order: 'descending' })
+const pageSize = ref(10)
 const currentPage = ref(1)
-const debouncedSearch = debounce(fetchData, 250)
-function fetchData({ currentPage, pageSize, sortBy, search }) {
+
+function fetchData() {
   tableLoading.value = true
   window.electron.ipcRenderer
-    .invoke('db:get-groups', cloneDeep({ currentPage, pageSize, sortBy, search, joinTag: false }))
+    .invoke(
+      'db:get-groups',
+      cloneDeep({
+        currentPage: currentPage.value,
+        pageSize: pageSize.value,
+        sortBy: sortBy.value,
+        search: search.value,
+        joinTag: false
+      })
+    )
     .then((result) => {
       if (result.isSuccess) {
         tableData.value = result.data.list
@@ -121,15 +131,18 @@ function fetchData({ currentPage, pageSize, sortBy, search }) {
       tableLoading.value = false
     })
 }
+const debouncedFetchData = debounce(fetchData, 250)
+
+function onSortChange(event) {
+  // event.column 中可能包含无法克隆对象
+  delete event.column
+  sortBy.value = event
+}
+
 watch(
-  currentPage,
+  [currentPage, sortBy, search],
   () => {
-    fetchData({
-      currentPage: currentPage.value,
-      pageSize: pageSize.value,
-      sortBy: sortBy.value,
-      search: search.value
-    })
+    debouncedFetchData()
   },
   { immediate: true }
 )
@@ -197,7 +210,7 @@ function onSubmit() {
         ElMessage.success(result.msg)
       } else {
         console.log(result.data)
-        ElMessage.error(result.data.toString())
+        ElMessage.error(result.msg)
       }
     })
     .finally(() => {

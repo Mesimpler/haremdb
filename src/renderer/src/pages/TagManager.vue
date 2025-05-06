@@ -4,7 +4,7 @@
     sortable="custom"
     border
     style="width: 100%"
-    @sort-change="sortBy = $event"
+    @sort-change="onSortChange"
   >
     <el-table-column label="标签名称" prop="name">
       <template #default="{ row }">
@@ -26,7 +26,6 @@
           collapse-tags
           collapse-tags-tooltip
           :max-collapse-tags="2"
-          :options-data="groups"
           @change="handleGroupChange(row)"
         />
       </template>
@@ -45,7 +44,7 @@
             placeholder="搜索标签名称"
             clearable
             prefix-icon="Search"
-            @input="debouncedSearch({ currentPage: 1, pageSize, sortBy, search: $event })"
+            @input="debouncedFetchData"
           />
           <el-button size="small" type="primary" @click="dialogFormVisible = true">
             添加标签
@@ -65,6 +64,7 @@
       :total="totalItems"
       :page-size="pageSize"
       background
+      size="default"
       layout="prev, pager, next"
     />
   </div>
@@ -88,7 +88,7 @@
 </template>
 
 <script setup>
-import { watch, ref, nextTick, onMounted } from 'vue'
+import { watch, ref, nextTick } from 'vue'
 import { cloneDeep, debounce } from 'lodash'
 import { ElMessage } from 'element-plus'
 import GroupSelect from '@components/GroupSelect.vue'
@@ -98,16 +98,23 @@ const tableData = ref([])
 const tableLoading = ref(false)
 const totalItems = ref(0)
 const search = ref('')
-const sortBy = ref({ prop: 'meta.created', order: 'desc' })
-const pageSize = ref(15)
+const sortBy = ref({ prop: 'meta.created', order: 'descending' })
+const pageSize = ref(10)
 const currentPage = ref(1)
 
-// // 防抖搜索
-const debouncedSearch = debounce(fetchData, 250)
-function fetchData({ currentPage, pageSize, sortBy, search }) {
+function fetchData() {
   tableLoading.value = true
   window.electron.ipcRenderer
-    .invoke('db:get-tags', cloneDeep({ currentPage, pageSize, sortBy, search, joinGroup: true }))
+    .invoke(
+      'db:get-tags',
+      cloneDeep({
+        currentPage: currentPage.value,
+        pageSize: pageSize.value,
+        sortBy: sortBy.value,
+        search: search.value,
+        joinGroup: true
+      })
+    )
     .then((result) => {
       if (result.isSuccess) {
         tableData.value = result.data.list
@@ -121,16 +128,18 @@ function fetchData({ currentPage, pageSize, sortBy, search }) {
       tableLoading.value = false
     })
 }
+const debouncedFetchData = debounce(fetchData, 250)
+
+function onSortChange(event) {
+  // event.column 中可能包含无法克隆对象
+  delete event.column
+  sortBy.value = event
+}
 
 watch(
-  currentPage,
+  [currentPage, search],
   () => {
-    fetchData({
-      currentPage: currentPage.value,
-      pageSize: pageSize.value,
-      sortBy: sortBy.value,
-      search: search.value
-    })
+    debouncedFetchData()
   },
   { immediate: true }
 )
@@ -217,12 +226,7 @@ function handleGroupChange(row) {
       }
     })
     .finally(() => {
-      fetchData({
-        currentPage: currentPage.value,
-        pageSize: pageSize.value,
-        sortBy: sortBy.value,
-        search: search.value
-      })
+      fetchData()
     })
 }
 
@@ -253,24 +257,6 @@ function onSubmit() {
       dialogFormVisible.value = false
     })
 }
-
-// 获取选择分组组件的Groups数据
-const groups = ref([])
-function fetchGroupsData() {
-  window.electron.ipcRenderer
-    .invoke('db:get-groups', { currentPage: 1, pageSize: 9999, joinTag: false })
-    .then((result) => {
-      if (result.isSuccess) {
-        groups.value = result.data.list
-      } else {
-        console.log(result.data)
-        ElMessage.error(result.data.toString())
-      }
-    })
-}
-onMounted(() => {
-  fetchGroupsData()
-})
 </script>
 
 <style scoped></style>
