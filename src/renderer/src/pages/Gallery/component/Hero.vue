@@ -57,8 +57,8 @@ function onDelete(image) {
       ElMessage.success(result.msg)
       emit('deleted')
     } else {
-      console.log(result.data)
-      ElMessage.error(result.data.toString())
+      ElMessage.error(result.msg)
+      console.error(result.data)
     }
   })
 }
@@ -67,9 +67,10 @@ function onSave() {
     if (result.isSuccess) {
       ElMessage.success(result.msg)
       emit('saved')
+      dialogVisible.value = false
     } else {
-      console.log(result.data)
-      ElMessage.error(result.data.toString())
+      ElMessage.error(result.msg)
+      console.error(result.data)
     }
   })
 }
@@ -82,8 +83,8 @@ function show(imageId) {
       if (result.isSuccess) {
         image.value = result.data
       } else {
-        console.log(result.data)
-        ElMessage.error(result.data.toString())
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
 }

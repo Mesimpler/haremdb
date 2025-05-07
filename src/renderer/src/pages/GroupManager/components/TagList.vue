@@ -21,7 +21,7 @@
       <el-text type="info">按下 Enter 确认</el-text>
     </template>
 
-    <el-button v-else class="button-new-tag" size="small" @click="showInput"> + New Tag </el-button>
+    <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
   </div>
 </template>
 
@@ -45,8 +45,8 @@ function fetchData() {
       if (result.isSuccess) {
         tags.value = result.data
       } else {
-        console.log(result.data)
-        ElMessage.error(result.data.toString())
+        console.error(result.data)
+        ElMessage.error(result.msg)
       }
     })
 }
@@ -72,7 +72,8 @@ function handleInputConfirm() {
           if (result.isSuccess) {
             fetchData()
           } else {
-            ElMessage.error(result.data)
+            ElMessage.error(result.msg)
+            console.error(result.data)
           }
         })
     }
@@ -91,7 +92,8 @@ function handleRemove(tag) {
       if (result.isSuccess) {
         fetchData()
       } else {
-        ElMessage.error(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
 }

@@ -90,16 +90,13 @@ function onRemove(file) {
   fileList.value = filter(fileList.value, (f) => f.path !== file.path)
 }
 function onSave(file) {
-  // console.log(file)
-  // console.log(cloneDeep(file))
-
   window.electron.ipcRenderer.invoke('db:add-image', cloneDeep(file)).then((result) => {
     if (result.isSuccess) {
       onRemove(file)
       ElMessage.success(result.msg)
     } else {
-      console.log(result.data)
-      ElMessage.error(result.data.toString())
+      console.error(result.data)
+      ElMessage.error(result.msg)
     }
   })
 }

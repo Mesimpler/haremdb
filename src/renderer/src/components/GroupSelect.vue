@@ -45,8 +45,8 @@ function fetchData() {
       if (result.isSuccess) {
         groups.value = result.data.list
       } else {
-        console.log(result.data)
-        ElMessage.error(result.data.toString())
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
 }

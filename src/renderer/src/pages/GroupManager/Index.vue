@@ -4,6 +4,7 @@
     sortable="custom"
     border
     style="width: 100%"
+    :default-sort="DEFAULT_SORT"
     @sort-change="onSortChange"
   >
     <el-table-column type="expand">
@@ -20,7 +21,6 @@
           v-else
           ref="inputRef"
           v-model="row.name"
-          style="width: 240px"
           placeholder="输入分组名称"
           @keyup.enter="onSaveEdit(row)"
           @blur="onSaveEdit(row)"
@@ -101,7 +101,8 @@ const tableData = ref([])
 const tableLoading = ref(false)
 const totalItems = ref(0)
 const search = ref('')
-const sortBy = ref({ prop: 'meta.created', order: 'descending' })
+const DEFAULT_SORT = { prop: 'index', order: 'ascending' }
+const sortBy = ref(DEFAULT_SORT)
 const pageSize = ref(10)
 const currentPage = ref(1)
 
@@ -123,8 +124,8 @@ function fetchData() {
         tableData.value = result.data.list
         totalItems.value = result.data.total
       } else {
-        ElMessage.error('查询分组失败')
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {
@@ -181,8 +182,8 @@ function onSaveEdit(row) {
       if (result.isSuccess) {
         ElMessage.success(result.msg)
       } else {
-        ElMessage.error(result.data.toString())
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {
@@ -209,8 +210,8 @@ function onSubmit() {
       if (result.isSuccess) {
         ElMessage.success(result.msg)
       } else {
-        console.log(result.data)
         ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {

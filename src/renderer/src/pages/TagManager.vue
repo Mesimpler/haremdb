@@ -4,6 +4,7 @@
     sortable="custom"
     border
     style="width: 100%"
+    :default-sort="DEFAULT_SORT"
     @sort-change="onSortChange"
   >
     <el-table-column label="标签名称" prop="name">
@@ -98,7 +99,8 @@ const tableData = ref([])
 const tableLoading = ref(false)
 const totalItems = ref(0)
 const search = ref('')
-const sortBy = ref({ prop: 'meta.created', order: 'descending' })
+const DEFAULT_SORT = { prop: 'meta.created', order: 'descending' }
+const sortBy = ref(DEFAULT_SORT)
 const pageSize = ref(10)
 const currentPage = ref(1)
 
@@ -120,8 +122,8 @@ function fetchData() {
         tableData.value = result.data.list
         totalItems.value = result.data.total
       } else {
-        ElMessage.error(result.data.toString())
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {
@@ -178,8 +180,8 @@ function onSaveEdit(row) {
       if (result.isSuccess) {
         ElMessage.success(result.msg)
       } else {
-        ElMessage.error(result.data.toString())
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {
@@ -198,10 +200,9 @@ function remove(row) {
     .then((result) => {
       if (result.isSuccess) {
         ElMessage.success(result.msg)
-        console.log(result.data)
       } else {
-        ElMessage.error(result.data.toString())
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {
@@ -221,7 +222,7 @@ function handleGroupChange(row) {
       if (result.isSuccess) {
         ElMessage.success(result.msg)
       } else {
-        ElMessage.error(result.data.toString())
+        ElMessage.error(result.msg)
         console.log(result.data)
       }
     })
@@ -243,17 +244,12 @@ function onSubmit() {
       if (result.isSuccess) {
         ElMessage.success(result.msg)
       } else {
-        ElMessage.error(result.data.toString())
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {
-      fetchData({
-        currentPage: currentPage.value,
-        pageSize: pageSize.value,
-        sortBy: sortBy.value,
-        search: search.value
-      })
+      fetchData()
       dialogFormVisible.value = false
     })
 }

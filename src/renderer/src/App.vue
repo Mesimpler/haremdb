@@ -1,6 +1,6 @@
 <template>
   <WindowsDragBar />
-  <el-config-provider :locale="zhCn" size="small">
+  <el-config-provider :locale="zhCn" size="small" :message="elMessageConfig">
     <div class="w-full h-full relative">
       <DarkSwitch class="absolute top-0 right-100px z-999" />
       <el-tabs v-model="activeName" type="border-card" class="app-tab">
@@ -31,6 +31,10 @@ const tabPages = [
   { label: '分组管理', name: 'GroupManager', component: GroupManager },
   { label: '标签管理', name: 'TagManager', component: TagManager }
 ]
+
+const elMessageConfig = {
+  offset: 50
+}
 </script>
 
 <style scoped>

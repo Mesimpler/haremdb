@@ -101,7 +101,8 @@ function fetchGroupTagsData() {
       if (result.isSuccess) {
         groupTags.value = result.data.list
       } else {
-        ElMessage.error('加载数据失败')
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
 }
@@ -126,8 +127,8 @@ function onSort() {
     .invoke('db:update-groups-index', cloneDeep(groupTags.value))
     .then((result) => {
       if (!result.isSuccess) {
-        ElMessage.error('保存排序信息失败')
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
   nextTick(() => {

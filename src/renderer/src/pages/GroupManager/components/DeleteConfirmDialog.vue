@@ -18,7 +18,7 @@
           content="勾选此项会将该分组属下的所有标签删除,这些标签可能属于其它分组 "
           placement="bottom"
         >
-          <el-checkbox v-model="isCascadeDeleteTags" class="pb-1"> 同时删除属下标签 </el-checkbox>
+          <el-checkbox v-model="isCascadeDeleteTags" class="pb-1">同时删除属下标签</el-checkbox>
         </el-tooltip>
         <div class="flex items-center">
           <el-button @click="deleteConfirmDialogVisible = false">取消</el-button>
@@ -53,9 +53,8 @@ function onConfirm() {
       if (result.isSuccess) {
         ElMessage.success(result.msg)
       } else {
-        deleteConfirmDialogVisible.value = true
-        ElMessage.error(result.data.toString())
-        console.log(result.data)
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {

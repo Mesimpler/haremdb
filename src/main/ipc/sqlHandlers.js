@@ -71,7 +71,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
         return {
           isSuccess: true,
-          msg: '操作成功',
+          msg: '获取标签列表成功',
           data: {
             list: groups,
             total
@@ -81,7 +81,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         console.error(error)
         return {
           isSuccess: false,
-          msg: '操作失败',
+          msg: '获取标签列表失败',
           data: error
         }
       }
@@ -95,11 +95,11 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '添加分组成功',
         data: null
       }
     } catch (error) {
-      let readableErrorMsg = '添加分组操作失败'
+      let readableErrorMsg = '添加分组失败'
       if (error.toString().includes('Duplicate key')) {
         readableErrorMsg = '分组名称已存在：' + addGroup.name
       }
@@ -121,14 +121,18 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
       })
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '修改分组成功',
         data: null
       }
     } catch (error) {
-      console.log(error)
+      let readableErrorMsg = '修改分组失败'
+      if (error.toString().includes('Duplicate key')) {
+        readableErrorMsg = '分组名称已存在：' + updateGroup.name
+      }
+      console.error(error)
       return {
         isSuccess: false,
-        msg: '操作成功',
+        msg: readableErrorMsg,
         data: error
       }
     }
@@ -150,14 +154,14 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '批量更新分组成功',
         data: null
       }
     } catch (error) {
       console.log(error)
       return {
         isSuccess: false,
-        msg: '操作成功',
+        msg: '批量更新分组失败',
         data: error
       }
     }
@@ -177,13 +181,13 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '删除分组成功',
         data: null
       }
     } catch (error) {
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: '删除分组失败',
         data: error
       }
     }
@@ -232,7 +236,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
         return {
           isSuccess: true,
-          msg: '操作成功',
+          msg: '查询标签列表成功',
           data: {
             list: tags,
             total
@@ -242,7 +246,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         console.error(error)
         return {
           isSuccess: false,
-          msg: '操作失败',
+          msg: '查询标签列表失败',
           data: error
         }
       }
@@ -264,13 +268,18 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '添加标签成功',
         data: addedTag
       }
     } catch (error) {
+      let readableErrorMsg = '添加标签失败'
+      if (error.toString().includes('Duplicate key')) {
+        readableErrorMsg = '分组名称已存在：' + addTag.name
+      }
+      console.log(error)
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: readableErrorMsg,
         data: error
       }
     }
@@ -295,14 +304,18 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '修改标签成功',
         data: null
       }
     } catch (error) {
+      let readableErrorMsg = '修改标签失败'
+      if (error.toString().includes('Duplicate key')) {
+        readableErrorMsg = '标签名称已存在：' + updateTag.name
+      }
       console.log(error)
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: readableErrorMsg,
         data: error
       }
     }
@@ -316,14 +329,14 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '删除标签成功',
         data: null
       }
     } catch (error) {
       console.error(error)
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: '删除标签失败',
         data: error
       }
     }
@@ -343,14 +356,14 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '获取未分组标签成功',
         data: uncTags
       }
     } catch (error) {
       console.error(error)
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: '获取未分组标签失败',
         data: error
       }
     }
@@ -378,9 +391,6 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         let existedTags = grouped.true || []
         const newTagNames = grouped.false || []
 
-        console.log(existedTags)
-        console.log(newTagNames)
-
         if (!_.isEmpty(newTagNames)) {
           const insertTags = newTagNames.map((tagName) => {
             return { name: tagName }
@@ -398,13 +408,13 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '新增图片成功',
         data: null
       }
     } catch (error) {
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: '新增图片失败',
         data: error
       }
     }
@@ -504,18 +514,17 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
         return {
           isSuccess: true,
-          msg: '操作成功',
+          msg: '获取图像列表成功',
           data: {
             list: images,
             total
           }
         }
       } catch (error) {
-        console.error('获取图像列表失败:', error)
         return {
           isSuccess: false,
-          msg: '操作失败',
-          data: error.message || error
+          msg: '获取图像列表失败',
+          data: error
         }
       }
     }
@@ -532,13 +541,13 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '通过图像ID获取图像成功',
         data: image
       }
     } catch (error) {
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: '通过图像ID获取图像失败',
         data: error
       }
     }
@@ -564,14 +573,14 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '更新图像成功',
         data: null
       }
     } catch (error) {
       console.log(error)
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: '更新图像失败',
         data: error
       }
     }
@@ -586,14 +595,14 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
 
       return {
         isSuccess: true,
-        msg: '操作成功',
+        msg: '删除图像成功',
         data: null
       }
     } catch (error) {
       console.error(error)
       return {
         isSuccess: false,
-        msg: '操作失败',
+        msg: '删除图像失败',
         data: error
       }
     }

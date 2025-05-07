@@ -163,8 +163,8 @@ function fetchData() {
         images.value = result.data.list
         totalItems.value = result.data.total
       } else {
-        console.error('获取图片数据失败:', result.data)
-        ElMessage.error('加载图片数据失败')
+        ElMessage.error(result.msg)
+        console.error(result.data)
       }
     })
     .finally(() => {
