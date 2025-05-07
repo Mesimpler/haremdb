@@ -1,7 +1,13 @@
 <template>
-  <WindowsDragBar />
-  <el-config-provider :locale="zhCn" size="small" :message="elMessageConfig">
-    <div class="w-full h-full relative">
+  <WindowsDragBar class="!w-260px !opacity-0" />
+  <el-config-provider
+    :locale="zhCn"
+    size="small"
+    :message="{
+      offset: 50
+    }"
+  >
+    <div class="w-full h-full relative" @dragenter.prevent="activeName = 'UploadManager'">
       <DarkSwitch class="absolute top-0 right-100px z-999" />
       <el-tabs v-model="activeName" type="border-card" class="app-tab">
         <!-- el-tab 切换逻辑是通过css控制的，不会触发组件的 onMounted 方法 -->
@@ -15,26 +21,45 @@
 
 <script setup>
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
+
 import Gallery from '@pages/Gallery/Index.vue'
-import Upload from '@pages/UploadManager/Index.vue'
+import UploadManager from '@pages/UploadManager.vue'
 import GroupManager from '@pages/GroupManager/Index.vue'
 import TagManager from '@pages/TagManager.vue'
+import Settings from '@pages/Settings.vue'
+
 import WindowsDragBar from '@components/WindowsDragBar.vue'
 import DarkSwitch from '@components/DarkSwitch.vue'
 
-import { ref } from 'vue'
+import { ref, provide, onMounted, watch } from 'vue'
 
 const activeName = ref('Gallery')
 const tabPages = [
-  { label: '图库', name: 'Gallery', component: Gallery },
-  { label: '上传图片', name: 'Upload', component: Upload },
+  { label: 'HaremDB', name: 'Gallery', component: Gallery },
+  { label: '上传图片', name: 'UploadManager', component: UploadManager },
   { label: '分组管理', name: 'GroupManager', component: GroupManager },
-  { label: '标签管理', name: 'TagManager', component: TagManager }
+  { label: '标签管理', name: 'TagManager', component: TagManager },
+  { label: '设置', name: 'Settings', component: Settings }
 ]
 
-const elMessageConfig = {
-  offset: 50
-}
+const APP_SETTINGS = ref({
+  gameRoot: '',
+  showImgName: true
+})
+onMounted(() => {
+  const savedSettings = localStorage.getItem('app-settings')
+  if (savedSettings) {
+    APP_SETTINGS.value = { ...JSON.parse(savedSettings) }
+  }
+  provide('app-settings', APP_SETTINGS)
+})
+watch(
+  APP_SETTINGS,
+  () => {
+    localStorage.setItem('app-settings', JSON.stringify(APP_SETTINGS.value))
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>

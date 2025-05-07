@@ -39,7 +39,12 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item>
-                <el-checkbox v-model="showImgName" label="显示文件名" :value="true" @click.stop />
+                <el-checkbox
+                  v-model="APP_SETTINGS.showImgName"
+                  label="显示文件名"
+                  :value="true"
+                  @click.stop
+                />
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -68,7 +73,7 @@
                   @click="heroRef.show(img.$loki)"
                 ></el-image>
                 <div
-                  v-if="showImgName"
+                  v-if="APP_SETTINGS.showImgName"
                   class="absolute bottom-0 bg-dark-5/60 w-full flex justify-center px-2 py-0 mr-5px pointer-events-none"
                 >
                   <el-text class="text-white" size="small" truncated>{{ img.name }}</el-text>
@@ -89,19 +94,21 @@
       </el-container>
     </el-container>
 
-    <Hero ref="heroRef" @deleted="fetchData" @saved="fetchData" />
+    <HeroDialog ref="heroRef" @deleted="fetchData" @saved="fetchData" />
   </el-config-provider>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { cloneDeep, debounce } from 'lodash'
-import Hero from './component/Hero.vue'
+
+import HeroDialog from './component/HeroDialog.vue'
 import Aside from './component/Aside.vue'
 
+const APP_SETTINGS = inject('app-settings', {})
+
 const images = ref()
-const showImgName = ref(true)
 const heroRef = ref(null)
 const searchTags = ref([])
 const searchName = ref('')

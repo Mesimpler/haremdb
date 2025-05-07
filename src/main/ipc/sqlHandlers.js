@@ -382,7 +382,8 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         name: addImage.name,
         path: filePath,
         size: addImage.size,
-        remark: addImage.remark
+        remark: addImage.remark,
+        mods: addImage.mods
       })
 
       // 如果传入 tags , 先将新建的 tags 进行创建，再统一进行关联
@@ -405,6 +406,8 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
           imageTagsCol().insert(insertImageTags)
         }
       }
+
+      // 移动 mods 到游戏文件夹
 
       return {
         isSuccess: true,
@@ -560,6 +563,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
       imagesCol().findAndUpdate({ $loki: updateImage.$loki }, (img) => {
         img.name = updateImage.name
         img.remark = updateImage.remark
+        img.mods = updateImage.mods
         return img
       })
 

@@ -17,7 +17,11 @@
           placeholder="输入标签名称"
           @keyup.enter="onSaveEdit(row)"
           @blur="onSaveEdit(row)"
-        />
+        >
+          <template #suffix>
+            <el-text type="info">按下Enter确认</el-text>
+          </template>
+        </el-input>
       </template>
     </el-table-column>
     <el-table-column label="分组" prop="group" width="220">

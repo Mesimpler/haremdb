@@ -20,3 +20,7 @@ html, body, #app {
 .img-panel {
   background-color: var(--el-fill-color-extra-light);
 }
+
+input {
+  -webkit-appearance: textfield;
+}

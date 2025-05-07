@@ -24,7 +24,11 @@
           placeholder="输入分组名称"
           @keyup.enter="onSaveEdit(row)"
           @blur="onSaveEdit(row)"
-        />
+        >
+          <template #suffix>
+            <el-text type="info">按下Enter确认</el-text>
+          </template>
+        </el-input>
       </template>
     </el-table-column>
     <el-table-column label="创建时间" prop="meta.created" sortable>
@@ -32,7 +36,7 @@
         {{ dayjs(row.meta.created).format('YYYY/MM/DD HH:mm') }}
       </template>
     </el-table-column>
-    <el-table-column label="排序" prop="index" sortable />
+    <el-table-column label="排序" prop="index" sortable width="80px" />
     <el-table-column align="right" width="250px">
       <template #header>
         <div class="flex gap-3">
