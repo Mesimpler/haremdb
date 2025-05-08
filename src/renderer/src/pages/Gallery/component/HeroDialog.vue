@@ -6,6 +6,7 @@
     align-center
     append-to-body
     :close-on-click-modal="true"
+    class="overflow-hidden"
   >
     <!-- 使用 v-if 避免发生空值错误 -->
     <Hero v-if="!isEmpty(image)" :data="image" @remove-card="onDelete" />
@@ -17,7 +18,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { cloneDeep, isEmpty } from 'lodash'
 
-import Hero from '@components/Hero.vue'
+import Hero from '@components/Hero/Index.vue'
 
 const dialogVisible = ref(false)
 const image = ref({})

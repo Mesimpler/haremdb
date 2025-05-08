@@ -1,6 +1,6 @@
-import { useClosure, createDBhostFile } from '../utils'
+import { useClosure, moveCardToDB, moveModToGame } from '../utils'
 import _ from 'lodash'
-import { remove } from 'fs-extra'
+import fse from 'fs-extra'
 
 // =======================================
 // lokijs
@@ -374,16 +374,21 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
   // ========================================================
 
   // 新增图像
-  ipcMain.handle('db:add-image', async (event, addImage) => {
+  ipcMain.handle('db:add-image', async (event, addImage, settings) => {
     try {
-      const filePath = await createDBhostFile(addImage.path)
+      const filePath = await moveCardToDB(addImage.path, settings.isCopyFile)
+
+      let savedMods = []
+      if (!_.isEmpty(addImage.mods) && !_.isEmpty(settings.gameRoot)) {
+        savedMods = moveModToGame(addImage.mods, settings)
+      }
 
       const addedImage = imagesCol().insert({
         name: addImage.name,
         path: filePath,
         size: addImage.size,
         remark: addImage.remark,
-        mods: addImage.mods
+        mods: savedMods
       })
 
       // 如果传入 tags , 先将新建的 tags 进行创建，再统一进行关联
@@ -406,8 +411,6 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
           imageTagsCol().insert(insertImageTags)
         }
       }
-
-      // 移动 mods 到游戏文件夹
 
       return {
         isSuccess: true,
@@ -557,13 +560,21 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
   })
 
   // 更新图像
-  ipcMain.handle('db:update-image', async (event, updateImage) => {
+  ipcMain.handle('db:update-image', async (event, updateImage, settings) => {
     try {
+      const srcImage = imagesCol().findOne({ $loki: updateImage.$loki })
+      const newMods = _.filter(updateImage.mods, (m) => !_.includes(srcImage.mods, m.path))
+
+      let savedMods = []
+      if (!_.isEmpty(newMods.mods) && !_.isEmpty(settings.gameRoot)) {
+        savedMods = moveModToGame(newMods, settings)
+      }
+
       // 不论字段是否真的更新，都进行 update 操作
       imagesCol().findAndUpdate({ $loki: updateImage.$loki }, (img) => {
         img.name = updateImage.name
         img.remark = updateImage.remark
-        img.mods = updateImage.mods
+        img.mods = savedMods
         return img
       })
 
@@ -595,7 +606,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
     try {
       imagesCol().findAndRemove({ $loki: imageId })
       imageTagsCol().findAndRemove({ image_id: imageId })
-      remove(imagePath)
+      fse.remove(imagePath)
 
       return {
         isSuccess: true,

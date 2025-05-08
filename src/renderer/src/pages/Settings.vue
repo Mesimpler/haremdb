@@ -11,6 +11,15 @@
           当你没有填写此项时，拖拽mod将不会为您复制到游戏mods文件夹
         </el-text>
       </el-form-item>
+      <el-form-item label="添加卡片或zipmod时行为: ">
+        <div>
+          <el-radio-group v-model="settings.isCopyFile" class="block h-30px">
+            <el-radio :value="true">复制</el-radio>
+            <el-radio :value="false">移动</el-radio>
+          </el-radio-group>
+          <el-text type="info" size="small" class="block">添加卡片和zipmod时是否保留源文件</el-text>
+        </div>
+      </el-form-item>
     </el-form>
   </el-config-provider>
 </template>

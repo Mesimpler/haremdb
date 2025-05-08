@@ -44,14 +44,15 @@ const tabPages = [
 
 const APP_SETTINGS = ref({
   gameRoot: '',
-  showImgName: true
+  showImgName: true,
+  isCopyFile: true
 })
+provide('app-settings', APP_SETTINGS)
 onMounted(() => {
   const savedSettings = localStorage.getItem('app-settings')
   if (savedSettings) {
     APP_SETTINGS.value = { ...JSON.parse(savedSettings) }
   }
-  provide('app-settings', APP_SETTINGS)
 })
 watch(
   APP_SETTINGS,

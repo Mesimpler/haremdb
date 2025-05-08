@@ -30,9 +30,9 @@
           @click.stop="file.showDrawer = true"
         >
           <el-text size="default">
-            <el-tooltip class="box-item" effect="dark" placement="bottom">
+            <el-tooltip class="box-item" effect="dark" placement="top">
               <template #content>
-                <span>系统会将这些文件自动添加到游戏根目录的mods/haremdb</span>
+                <span>系统会将这些文件添加到游戏根目录的mods/haremdb</span>
               </template>
               <el-icon color="#909399"><WarningFilled /></el-icon>
             </el-tooltip>
@@ -48,20 +48,35 @@
             title="zipmod 文件列表"
             direction="rtl"
             :show-close="false"
-            size="40%"
+            size="45%"
           >
-            <Uploader v-model="file.mods" :acceptable="{ name: 'zipmod', extensions: ['zipmod'] }">
-              <el-text size="large">拖拽 .zipmod 到此或点击选择</el-text>
-            </Uploader>
-            <el-upload
-              v-model:file-list="file.mods"
-              action="#"
-              :auto-upload="false"
-              class="zipmod-upload w-full"
-            />
-            <el-text v-if="file.mods && file.mods.length > 0" size="small" type="info">
-              关联了 {{ file.mods.length }} 个文件, 共 {{ filesize(totalModFileSize(file.mods)) }}
-            </el-text>
+            <div class="relative h-full flex flex-col">
+              <Uploader
+                v-model="file.mods"
+                :acceptable="{ name: 'zipmod', extensions: ['zipmod'] }"
+              >
+                <el-text size="large">拖拽 .zipmod 到此或点击选择</el-text>
+              </Uploader>
+
+              <ModList v-model="file.mods" @closed-file="onRemoveMod" />
+
+              <el-text
+                v-if="file.mods && file.mods.length > 0"
+                size="small"
+                type="info"
+                class="self-start"
+              >
+                关联了 {{ file.mods.length }} 个文件, 共 {{ filesize(totalModFileSize(file.mods)) }}
+              </el-text>
+              <el-text v-else size="small" type="info">暂未关联文件</el-text>
+              <el-text size="small" type="warning" class="absolute bottom-5">
+                <el-icon><WarningFilled /></el-icon>
+                当你移除文件时系统不会删除关联的.zipmod文件
+              </el-text>
+              <el-text size="small" type="warning" class="absolute bottom-0">
+                如果有需要请自行前往删除
+              </el-text>
+            </div>
           </el-drawer>
         </Uploader>
       </div>
@@ -84,16 +99,19 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue'
-import { isEmpty, cloneDeep } from 'lodash'
+import { inject, ref, watchEffect } from 'vue'
+import { isEmpty, cloneDeep, filter } from 'lodash'
 import TagSelect from '@components/TagSelect.vue'
 import { ElMessage } from 'element-plus'
 import { filesize } from 'filesize'
-import Uploader from './Uploader.vue'
+import Uploader from '@components/Uploader.vue'
+import ModList from './components/ModList.vue'
 
 const props = defineProps({
   data: Object
 })
+
+const settings = inject('app-settings', {})
 
 const file = ref({})
 const emit = defineEmits(['removeCard'])
@@ -113,19 +131,25 @@ function totalModFileSize(modFiles) {
   }
 }
 
+function onRemoveMod(mod) {
+  file.value.mods = filter(file.value.mods, (m) => m.path !== mod.path)
+}
+
 function onRemove(file) {
   emit('removeCard', file)
 }
 function onSave(file) {
-  window.electron.ipcRenderer.invoke('db:add-image', cloneDeep(file)).then((result) => {
-    if (result.isSuccess) {
-      onRemove(file)
-      ElMessage.success(result.msg)
-    } else {
-      console.error(result.data)
-      ElMessage.error(result.msg)
-    }
-  })
+  window.electron.ipcRenderer
+    .invoke('db:add-image', cloneDeep(file), cloneDeep(settings.value))
+    .then((result) => {
+      if (result.isSuccess) {
+        onRemove(file)
+        ElMessage.success(result.msg)
+      } else {
+        console.error(result.data)
+        ElMessage.error(result.msg)
+      }
+    })
 }
 </script>
 

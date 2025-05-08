@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { copy } from 'fs-extra'
+import fse from 'fs-extra'
 import { app } from 'electron'
 import path from 'path'
 import { is } from '@electron-toolkit/utils'
@@ -56,12 +56,12 @@ export function collectTheKey(obj, keysToCollect) {
 }
 
 /**
- * 将文件复制到DB中管理
+ * 将card文件复制到DB中
  * @param {String} filePath 待复制文件
  *
  * fs-extra doc: https://github.com/jprichardson/node-fs-extra
  */
-export async function createDBhostFile(filePath) {
+export async function moveCardToDB(filePath, reserveSourceFile = true) {
   const uniqueFileName = `hdb_${Date.now()}_${Math.floor(Math.random() * 1000)}${path.extname(filePath)}`
 
   let fileRepoPath = null
@@ -72,8 +72,34 @@ export async function createDBhostFile(filePath) {
     fileRepoPath = path.join(exeDir, 'repo', uniqueFileName)
   }
 
-  await copy(filePath, fileRepoPath)
-  console.log(fileRepoPath)
+  if (reserveSourceFile) {
+    await fse.copy(filePath, fileRepoPath)
+  } else {
+    await fse.move(filePath, fileRepoPath)
+  }
 
   return fileRepoPath
+}
+
+/**
+ * 将mod文件复制到游戏中
+ *
+ */
+export function moveModToGame(mods, appSettings) {
+  const savedMods = mods.map((mod) => {
+    mod.srcPath = mod.path
+    mod.path = path.join(appSettings.gameRoot, 'mods', 'haremdb', mod.name)
+    return mod
+  })
+  savedMods.forEach((mod) => {
+    if (fse.pathExistsSync(mod.path)) return
+
+    if (appSettings.isCopyFile) {
+      fse.copySync(mod.srcPath, mod.path)
+    } else {
+      fse.moveSync(mod.srcPath, mod.path)
+    }
+  })
+
+  return savedMods
 }

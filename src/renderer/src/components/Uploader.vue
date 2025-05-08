@@ -52,7 +52,6 @@ function handleFileDrop(event) {
   const pngFiles = filter(dropInFiles, (f) => {
     return props.acceptable.extensions.some((ext) => f.name.endsWith(ext))
   })
-  console.log(fileList.value.concat(pngFiles))
   emit('update:modelValue', uniqBy(cloneDeep(fileList.value.concat(pngFiles)), 'path'))
 }
 </script>

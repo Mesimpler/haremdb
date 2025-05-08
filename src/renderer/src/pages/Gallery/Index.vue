@@ -73,7 +73,7 @@
                   @click="heroRef.show(img.$loki)"
                 ></el-image>
                 <div
-                  v-if="APP_SETTINGS.showImgName"
+                  v-show="APP_SETTINGS.showImgName"
                   class="absolute bottom-0 bg-dark-5/60 w-full flex justify-center px-2 py-0 mr-5px pointer-events-none"
                 >
                   <el-text class="text-white" size="small" truncated>{{ img.name }}</el-text>

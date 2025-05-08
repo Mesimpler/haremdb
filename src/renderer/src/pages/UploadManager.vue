@@ -23,7 +23,7 @@
 import { ref } from 'vue'
 import { filter } from 'lodash'
 
-import Hero from '@components/Hero.vue'
+import Hero from '@components/Hero/Index.vue'
 import Uploader from '@components/Uploader.vue'
 
 const fileList = ref([])
