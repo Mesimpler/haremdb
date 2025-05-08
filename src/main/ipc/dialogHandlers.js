@@ -1,7 +1,6 @@
-import { dialog, shell } from 'electron'
+import { dialog } from 'electron'
 import path from 'path'
 import fs from 'fs/promises'
-import fse from 'fs-extra'
 
 export default function registerDialogHandlers(ipcMain, win) {
   ipcMain.handle('showOpenDialog', async (event, options) => {
@@ -20,15 +19,6 @@ export default function registerDialogHandlers(ipcMain, win) {
       return files
     } else {
       return []
-    }
-  })
-
-  ipcMain.handle('showFileInExploer', async (event, filePath) => {
-    if (await fse.pathExists(filePath)) {
-      shell.showItemInFolder(filePath)
-      return true
-    } else {
-      return false
     }
   })
 }

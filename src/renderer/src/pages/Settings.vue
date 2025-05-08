@@ -20,12 +20,32 @@
           <el-text type="info" size="small" class="block">添加卡片和zipmod时是否保留源文件</el-text>
         </div>
       </el-form-item>
+
+      <div>
+        <div class="flex gap-2">
+          <el-link
+            underline="never"
+            @click.prevent="openLinkBrowser('https://github.com/Mesimpler/haremdb')"
+          >
+            Open Source Github
+          </el-link>
+        </div>
+        <div class="flex gap-2">
+          <el-text>v{{ version }}</el-text>
+          <el-link
+            underline="never"
+            @click.prevent="openLinkBrowser('https://github.com/Mesimpler/haremdb/releases')"
+          >
+            检查更新
+          </el-link>
+        </div>
+      </div>
     </el-form>
   </el-config-provider>
 </template>
 
 <script setup>
-import { inject } from 'vue'
+import { inject, onMounted, ref } from 'vue'
 
 const settings = inject('app-settings', {})
 
@@ -39,6 +59,15 @@ function showFolderPicker() {
         settings.value.gameRoot = dirs[0].path
       }
     })
+}
+
+const version = ref('')
+onMounted(async () => {
+  version.value = await window.electron.ipcRenderer.invoke('get-app-version')
+})
+
+function openLinkBrowser(url) {
+  window.electron.ipcRenderer.invoke('openExternalLink', url)
 }
 </script>
 
