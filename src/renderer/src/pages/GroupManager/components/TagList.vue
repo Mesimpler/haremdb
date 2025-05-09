@@ -15,6 +15,7 @@
         v-model="inputValue"
         class="w-20"
         size="small"
+        :spellcheck="false"
         @keyup.enter="handleInputConfirm"
         @blur="handleInputCancel"
       />

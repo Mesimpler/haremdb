@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, inject, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { cloneDeep, isEmpty } from 'lodash'
 import { VueDraggable } from 'vue-draggable-plus'
@@ -85,6 +85,11 @@ onMounted(() => {
 const groupTags = ref([])
 const unGroupTags = ref([])
 const draging = ref(false)
+
+const isInsideDrag = inject('isInsideDrag')
+watch(draging, () => {
+  isInsideDrag.value = draging
+})
 
 /**
  * 获取分组标签数据

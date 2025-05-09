@@ -48,7 +48,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         const total = chain.count()
 
         // 构建排序条件
-        let sort = [['$loki', false]] // 默认按ID降序
+        let sort = [['index', false]] // 默认按用户排序降序
         if (sortBy) {
           if (Array.isArray(sortBy) && sortBy.length > 0) {
             sort = sortBy.map((item) => [item.prop, item.order === 'descending'])
@@ -391,19 +391,27 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         mods: savedMods
       })
 
-      // 如果传入 tags , 先将新建的 tags 进行创建，再统一进行关联
+      // 如果传入 tags
       if (!_.isEmpty(addImage.tags)) {
-        const grouped = _.groupBy(addImage.tags, (t) => _.isObject(t)) || {}
-        let existedTags = grouped.true || []
-        const newTagNames = grouped.false || []
+        let existedTags = []
+        let insertTags = []
 
-        if (!_.isEmpty(newTagNames)) {
-          const insertTags = newTagNames.map((tagName) => {
-            return { name: tagName }
-          })
-          const insertedTags = tagsCol().insert(insertTags)
-          existedTags = _.concat(existedTags, insertedTags)
-        }
+        addImage.tags.forEach((tag) => {
+          if (_.isObject(tag)) {
+            existedTags.push(tag)
+          } else {
+            const queryTag = tagsCol().findOne({ name: tag })
+            if (queryTag !== null) {
+              existedTags.push(queryTag)
+            } else {
+              insertTags.push({ name: tag })
+            }
+          }
+        })
+
+        const insertedTags = tagsCol().insert(insertTags)
+        existedTags = _.concat(existedTags, insertedTags)
+
         if (!_.isEmpty(existedTags)) {
           const insertImageTags = existedTags.map((tag) => {
             return { image_id: addedImage.$loki, tag_id: tag.$loki }

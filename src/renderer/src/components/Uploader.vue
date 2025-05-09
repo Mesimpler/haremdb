@@ -43,16 +43,26 @@ function openFilePicker() {
       filters: [props.acceptable]
     })
     .then((files) => {
-      emit('update:modelValue', uniqBy(fileList.value.concat(files), 'path'))
+      emit('update:modelValue', uniqBy(fileList.value.concat(removeFileNameExt(files)), 'path'))
     })
 }
 function handleFileDrop(event) {
   isDragging.value = false
   const dropInFiles = window.api.getDropFilesPath(event.dataTransfer.files)
   const pngFiles = filter(dropInFiles, (f) => {
-    return props.acceptable.extensions.some((ext) => f.name.endsWith(ext))
+    return props.acceptable.extensions.some((ext) => f.path.endsWith(ext))
   })
-  emit('update:modelValue', uniqBy(cloneDeep(fileList.value.concat(pngFiles)), 'path'))
+  emit(
+    'update:modelValue',
+    uniqBy(cloneDeep(fileList.value.concat(removeFileNameExt(pngFiles))), 'path')
+  )
+}
+
+function removeFileNameExt(files) {
+  return files.map((f) => ({
+    ...f,
+    name: f.name.substring(0, f.name.lastIndexOf('.'))
+  }))
 }
 </script>
 

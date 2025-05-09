@@ -15,6 +15,7 @@
           ref="inputRef"
           v-model="row.name"
           placeholder="输入标签名称"
+          :spellcheck="false"
           @keyup.enter="onSaveEdit(row)"
           @blur="onSaveEdit(row)"
         >
@@ -49,6 +50,7 @@
             placeholder="搜索标签名称"
             clearable
             prefix-icon="Search"
+            :spellcheck="false"
             @input="debouncedFetchData"
           />
           <el-button size="small" type="primary" @click="dialogFormVisible = true">
@@ -77,7 +79,7 @@
   <el-dialog v-model="dialogFormVisible" :close-on-click-modal="false" title="添加标签" width="500">
     <el-form ref="formRef" :model="form" label-width="70px">
       <el-form-item label="标签名称" required prop="name">
-        <el-input v-model="form.name" autocomplete="off" />
+        <el-input v-model="form.name" autocomplete="off" :spellcheck="false" />
       </el-form-item>
       <el-form-item label="标签分组" prop="groups">
         <GroupSelect v-model="form.groups" />

@@ -7,9 +7,14 @@
       offset: 50
     }"
   >
-    <div class="w-full h-full relative" @dragenter.prevent="activeName = 'UploadManager'">
+    <div class="w-full h-full relative">
       <DarkSwitch class="absolute top-0 right-100px z-999" />
-      <el-tabs v-model="activeName" type="border-card" class="app-tab">
+      <el-tabs
+        v-model="activeName"
+        type="border-card"
+        class="app-tab"
+        @dragover="throttleOnDragover"
+      >
         <!-- el-tab 切换逻辑是通过css控制的，不会触发组件的 onMounted 方法 -->
         <el-tab-pane v-for="tp in tabPages" :key="tp.label" :label="tp.label" :name="tp.name">
           <component :is="tp.component" v-if="activeName === tp.name" />
@@ -32,6 +37,7 @@ import WindowsDragBar from '@components/WindowsDragBar.vue'
 import DarkSwitch from '@components/DarkSwitch.vue'
 
 import { ref, provide, onMounted, watch } from 'vue'
+import _ from 'lodash'
 
 const activeName = ref('Gallery')
 const tabPages = [
@@ -61,6 +67,20 @@ watch(
   },
   { deep: true }
 )
+
+const isInsideDrag = ref(false)
+provide('isInsideDrag', isInsideDrag)
+const throttleOnDragover = _.throttle(onDragover, 3000, { leading: true, trailing: false })
+function onDragover() {
+  if (!isInsideDrag.value) {
+    activeName.value = 'UploadManager'
+  }
+}
+
+document.addEventListener('dragleave', (e) => {
+  e.preventDefault()
+  e.stopPropagation()
+})
 </script>
 
 <style scoped>

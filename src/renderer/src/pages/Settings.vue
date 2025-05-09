@@ -2,7 +2,7 @@
   <el-config-provider size="default">
     <el-form label-position="top" label-width="auto" class="w-80%">
       <el-form-item label="游戏根目录：">
-        <el-input v-model="settings.gameRoot">
+        <el-input v-model="settings.gameRoot" :spellcheck="false">
           <template #append>
             <el-button icon="Folder" @click="showFolderPicker" />
           </template>

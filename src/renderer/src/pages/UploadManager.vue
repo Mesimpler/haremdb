@@ -13,23 +13,45 @@
       </div>
 
       <el-scrollbar max-height="480px">
-        <Hero v-for="file in fileList" :key="file.path" :data="file" @remove-card="removeCard" />
+        <Hero
+          v-for="file in fileList"
+          :key="file.path"
+          :data="file"
+          @confirm="saveCard"
+          @delete="removeCard"
+        />
       </el-scrollbar>
     </div>
   </el-config-provider>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { filter } from 'lodash'
+import { ref, inject } from 'vue'
+import { filter, cloneDeep } from 'lodash'
+import { ElMessage } from 'element-plus'
 
 import Hero from '@components/Hero/Index.vue'
 import Uploader from '@components/Uploader.vue'
 
 const fileList = ref([])
+const settings = inject('app-settings', {})
 
 function removeCard(file) {
   fileList.value = filter(fileList.value, (f) => f.path !== file.path)
+}
+
+function saveCard(file) {
+  window.electron.ipcRenderer
+    .invoke('db:add-image', cloneDeep(file), cloneDeep(settings.value))
+    .then((result) => {
+      if (result.isSuccess) {
+        ElMessage.success(result.msg)
+        removeCard(file)
+      } else {
+        console.error(result.data)
+        ElMessage.error(result.msg)
+      }
+    })
 }
 </script>
 

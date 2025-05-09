@@ -2,7 +2,13 @@
   <el-config-provider size="default">
     <el-container class="h-full">
       <el-header class="flex gap-2 items-center m-0 p-0 h-auto mb-2">
-        <el-input v-model="searchName" class="w-200px" placeholder="搜索文件名" clearable />
+        <el-input
+          v-model="searchName"
+          class="w-200px"
+          placeholder="搜索文件名"
+          clearable
+          :spellcheck="false"
+        />
         <el-input-tag
           v-model="searchTags"
           placeholder="搜索图片标签..."
@@ -69,7 +75,8 @@
                   class="block w-full min-h-180px cursor-pointer"
                   :src="`local-resource://${img.path}`"
                   loading="lazy"
-                  @dragstart.prevent="onImgDrag(img)"
+                  @dragstart="onImgDragStart(img)"
+                  @dragend="onImgDragend"
                   @click="heroRef.show(img.$loki)"
                 ></el-image>
                 <div
@@ -94,7 +101,7 @@
       </el-container>
     </el-container>
 
-    <HeroDialog ref="heroRef" @deleted="fetchData" @saved="fetchData" />
+    <HeroDialog ref="heroRef" @deleted="fetchData" @updated="fetchData" />
   </el-config-provider>
 </template>
 
@@ -201,8 +208,13 @@ watch(
   }
 )
 
-function onImgDrag(img) {
+const isInsideDrag = inject('isInsideDrag')
+function onImgDragStart(img) {
   window.electron.ipcRenderer.send('ondragstart', cloneDeep(img.path))
+  isInsideDrag.value = true
+}
+function onImgDragend() {
+  isInsideDrag.value = false
 }
 </script>
 

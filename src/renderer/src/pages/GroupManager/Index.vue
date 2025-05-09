@@ -22,6 +22,7 @@
           ref="inputRef"
           v-model="row.name"
           placeholder="输入分组名称"
+          :spellcheck="false"
           @keyup.enter="onSaveEdit(row)"
           @blur="onSaveEdit(row)"
         >
@@ -46,6 +47,7 @@
             placeholder="搜索分组名称"
             clearable
             prefix-icon="Search"
+            :spellcheck="false"
             @input="debouncedFetchData"
           />
           <el-button size="small" type="primary" @click="addFrmDialogVisible = true">
@@ -80,7 +82,7 @@
   <el-dialog v-model="addFrmDialogVisible" title="添加分组" width="500">
     <el-form ref="formRef" :model="form" label-width="70px">
       <el-form-item label="分组名称" required prop="name">
-        <el-input v-model="form.name" autocomplete="off" />
+        <el-input v-model="form.name" autocomplete="off" :spellcheck="false" />
       </el-form-item>
       <el-form-item class="mb-0">
         <div class="flex w-full justify-end">

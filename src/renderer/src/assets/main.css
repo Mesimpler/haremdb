@@ -21,6 +21,6 @@ html, body, #app {
   background-color: var(--el-fill-color-extra-light);
 }
 
-input {
-  -webkit-appearance: textfield;
+.el-input__inner {
+  spell-check: none;
 }

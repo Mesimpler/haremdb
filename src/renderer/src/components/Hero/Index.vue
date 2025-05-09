@@ -21,6 +21,7 @@
           resize="none"
           input-style="height: 100%"
           placeholder="图片备注"
+          :spellcheck="false"
           class="h-full"
         />
         <Uploader
@@ -83,15 +84,20 @@
 
       <!-- 第三行 -->
       <div class="w-full flex gap-2">
-        <el-input v-model="file.name" placeholder="Please input" class="flex-1">
+        <el-input v-model="file.name" placeholder="Please input" :spellcheck="false" class="flex-1">
           <template #prepend>文件名</template>
           <template #suffix>
             <el-text type="info">{{ filesize(file.size) }}</el-text>
           </template>
         </el-input>
         <div class="flex h-auto">
-          <el-button type="danger" plain icon="Delete" @click="onRemove(file)"></el-button>
-          <el-button type="success" plain icon="CircleCheck" @click="onSave(file)"></el-button>
+          <el-button type="danger" plain icon="Delete" @click="emit('delete', file)"></el-button>
+          <el-button
+            type="success"
+            plain
+            icon="CircleCheck"
+            @click="emit('confirm', file)"
+          ></el-button>
         </div>
       </div>
     </div>
@@ -99,10 +105,10 @@
 </template>
 
 <script setup>
-import { inject, ref, watchEffect } from 'vue'
-import { isEmpty, cloneDeep, filter } from 'lodash'
-import TagSelect from '@components/TagSelect.vue'
-import { ElMessage } from 'element-plus'
+import { ref, watchEffect } from 'vue'
+import { isEmpty, filter } from 'lodash'
+import TagSelect from './components/TagSelect.vue'
+
 import { filesize } from 'filesize'
 import Uploader from '@components/Uploader.vue'
 import ModList from './components/ModList.vue'
@@ -111,10 +117,8 @@ const props = defineProps({
   data: Object
 })
 
-const settings = inject('app-settings', {})
-
 const file = ref({})
-const emit = defineEmits(['removeCard'])
+const emit = defineEmits(['delete', 'confirm'])
 
 watchEffect(() => {
   file.value = props.data
@@ -133,23 +137,6 @@ function totalModFileSize(modFiles) {
 
 function onRemoveMod(mod) {
   file.value.mods = filter(file.value.mods, (m) => m.path !== mod.path)
-}
-
-function onRemove(file) {
-  emit('removeCard', file)
-}
-function onSave(file) {
-  window.electron.ipcRenderer
-    .invoke('db:add-image', cloneDeep(file), cloneDeep(settings.value))
-    .then((result) => {
-      if (result.isSuccess) {
-        onRemove(file)
-        ElMessage.success(result.msg)
-      } else {
-        console.error(result.data)
-        ElMessage.error(result.msg)
-      }
-    })
 }
 </script>
 

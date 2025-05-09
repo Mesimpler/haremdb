@@ -1,5 +1,6 @@
 <template>
   <el-select
+    v-model="model"
     multiple
     placeholder="选择或输入标签"
     filterable
@@ -7,23 +8,44 @@
     allow-create
     default-first-option
     tag-type="primary"
+    @visible-change="onDropdown"
   >
     <el-option v-for="tag in tags" :key="tag.$loki" :label="tag.name" :value="tag">
-      <div class="flex items-center justify-between pr-2">
+      <div class="flex items-center justify-between h-full">
         <el-tag size="small">{{ tag.name }}</el-tag>
-        <span class="text-#909399 font-13px">
+        <el-text type="info" size="small">
           {{ getReadableGroups(tag.groups) }}
-        </span>
+        </el-text>
       </div>
     </el-option>
   </el-select>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { watch, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const tags = ref([])
+const model = defineModel({
+  type: Array
+})
+
+const isDropdownShow = ref(false)
+
+watch(
+  () => model.value,
+  () => {
+    if (!isDropdownShow.value) {
+      tags.value = model.value
+    }
+  },
+  { immediate: true }
+)
+
+function onDropdown(isShow) {
+  isDropdownShow.value = isShow
+  if (isShow) fetchData()
+}
 
 function fetchData() {
   window.electron.ipcRenderer
@@ -42,10 +64,6 @@ function getReadableGroups(groups) {
   const arr = groups.map((group) => group.name)
   return arr.join(', ')
 }
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style scoped></style>
