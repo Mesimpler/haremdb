@@ -7,7 +7,7 @@
       offset: 50
     }"
   >
-    <div class="w-full h-full relative">
+    <div class="w-full h-full relative" @mouseleave="isInsideDrag = false">
       <DarkSwitch class="absolute top-0 right-100px z-999" />
       <el-tabs
         v-model="activeName"
@@ -76,11 +76,6 @@ function onDragover() {
     activeName.value = 'UploadManager'
   }
 }
-
-document.addEventListener('dragleave', (e) => {
-  e.preventDefault()
-  e.stopPropagation()
-})
 </script>
 
 <style scoped>

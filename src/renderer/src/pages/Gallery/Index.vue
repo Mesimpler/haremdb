@@ -64,19 +64,19 @@
             <div
               v-if="images && images.length > 0"
               v-loading="galleryLoading"
+              element-loading-background="#ffffff00"
               class="w-full h-full flex-1 grid grid-cols-5 grid-rows-3 gap-2 items-start"
             >
               <div
                 v-for="img in images"
                 :key="img.$loki"
-                class="relative w-full flex bg-blue border-el"
+                class="hover-card relative w-full flex bg-blue border-el"
               >
                 <el-image
                   class="block w-full min-h-180px cursor-pointer"
                   :src="`local-resource://${img.path}`"
                   loading="lazy"
-                  @dragstart="onImgDragStart(img)"
-                  @dragend="onImgDragend"
+                  @dragstart.prevent="onImgDragStart(img)"
                   @click="heroRef.show(img.$loki)"
                 ></el-image>
                 <div
@@ -85,6 +85,7 @@
                 >
                   <el-text class="text-white" size="small" truncated>{{ img.name }}</el-text>
                 </div>
+                <div class="hover-card-detail"></div>
               </div>
             </div>
             <el-empty v-else class="flex-1"></el-empty>
@@ -106,7 +107,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { cloneDeep, debounce } from 'lodash'
 
@@ -134,7 +135,7 @@ const sortOptions = ref({
   props: [
     { label: '创建时间', prop: 'meta.created' },
     { label: '文件名', prop: 'name' },
-    { label: '拖拽次数', prop: 'count' }
+    { label: '拖拽次数', prop: 'useCount' }
   ]
 })
 // 计算当前排序方式
@@ -151,6 +152,22 @@ function toggleTag(tagName) {
     searchTags.value.splice(index, 1)
   }
 }
+
+onMounted(() => {
+  const saved = localStorage.getItem('gallery-sort-options')
+  if (saved) {
+    sortOptions.value = { ...JSON.parse(saved) }
+  }
+})
+
+watch(
+  sortOptions,
+  () => {
+    localStorage.setItem('gallery-sort-options', JSON.stringify(sortOptions.value))
+  },
+  { deep: true }
+)
+
 /**
  * 获取图库数据
  * @param {Object} params - 查询参数
@@ -176,6 +193,7 @@ function fetchData() {
       if (result.isSuccess) {
         images.value = result.data.list
         totalItems.value = result.data.total
+        console.log(images.value)
       } else {
         ElMessage.error(result.msg)
         console.error(result.data)
@@ -210,11 +228,16 @@ watch(
 
 const isInsideDrag = inject('isInsideDrag')
 function onImgDragStart(img) {
-  window.electron.ipcRenderer.send('ondragstart', cloneDeep(img.path))
   isInsideDrag.value = true
-}
-function onImgDragend() {
-  isInsideDrag.value = false
+  window.electron.ipcRenderer.send('ondragstart', cloneDeep(img.path))
+  window.electron.ipcRenderer.invoke('db:add-image-usecount', img.$loki).then((result) => {
+    if (!result.isSuccess) {
+      ElMessage.error(result.msg)
+      console.error(result.data)
+    } else {
+      img.useCount = result.data
+    }
+  })
 }
 </script>
 
@@ -222,5 +245,10 @@ function onImgDragend() {
 /* 排序选择图标 */
 .sort-select :deep(.el-select__wrapper) {
   padding: 3px 7px !important;
+}
+
+.hover-card:hover {
+  /* transform: scale(1.03); */
+  border-color: var(--el-color-primary);
 }
 </style>

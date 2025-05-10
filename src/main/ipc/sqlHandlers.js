@@ -609,6 +609,31 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
     }
   })
 
+  // 自增图像使用次数
+  ipcMain.handle('db:add-image-usecount', async (event, imageId) => {
+    try {
+      let newUseCount = 0
+      imagesCol().findAndUpdate({ $loki: imageId }, (img) => {
+        img.useCount = img.useCount === undefined ? 1 : ++img.useCount
+        newUseCount = img.useCount
+        return img
+      })
+
+      return {
+        isSuccess: true,
+        msg: '更新图像使用次数成功',
+        data: newUseCount
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        isSuccess: false,
+        msg: '更新图像使用次数失败',
+        data: error
+      }
+    }
+  })
+
   // 删除图像
   ipcMain.handle('db:delete-image', async (event, { $loki: imageId, path: imagePath }) => {
     try {

@@ -1,13 +1,18 @@
 <template>
   <el-card shadow="never" class="w-100% mb-2 img-panel" body-class="p-2 pr-3 flex gap-2">
-    <div class="w-140px min-h-190px h-auto flex flex-col">
+    <div class="w-140px min-h-190px h-auto flex flex-col relative">
       <el-image
         class="block border-el h-full"
         loading="lazy"
         cover
         :src="`local-resource://${file.path}`"
       />
-      <el-text size="large" class="w-140px text-align-center" truncated></el-text>
+
+      <!-- <div class="absolute bottom-0 bg-dark-5/60 w-full flex justify-center px-2 py-0 mr-5px">
+        <el-text class="text-white" size="small" truncated>
+          已使用：{{ file.useCount || 0 }}
+        </el-text>
+      </div> -->
     </div>
     <div class="w-full flex flex-col gap-2 flex-1">
       <!-- 第一行 -->
