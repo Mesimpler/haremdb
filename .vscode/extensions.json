@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "aaron-bond.better-comments",
+    "antfu.unocss",
+    "esbenp.prettier-vscode",
+    "vue.volar"
+  ]
+}
