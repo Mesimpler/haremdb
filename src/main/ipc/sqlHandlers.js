@@ -443,25 +443,7 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
         // 1. 首先处理标签名称过滤条件
         let imageIdsFromTags = []
         if (searchTags && searchTags.length > 0) {
-          // 1.1 根据标签名称查找对应的标签ID
-          const matchedTags = tagsCol().find({
-            name: { $in: searchTags } // 查找名称匹配的标签
-          })
-
-          // 1.2 如果没有找到任何匹配的标签，直接返回空结果
-          if (matchedTags.length === 0) {
-            return {
-              isSuccess: true,
-              msg: '操作成功',
-              data: {
-                list: [],
-                total: 0
-              }
-            }
-          }
-
-          // 1.3 获取包含这些标签的所有图片关联关系
-          const tagIds = matchedTags.map((tag) => tag.$loki)
+          const tagIds = searchTags.map((tag) => tag.$loki)
           const tagRelations = imageTagsCol().find({
             tag_id: { $in: tagIds }
           })

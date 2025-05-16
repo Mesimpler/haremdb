@@ -51,7 +51,7 @@
                 <el-tag
                   v-for="tag in group.tags"
                   :key="tag.$loki"
-                  :type="searchTags && searchTags.includes(tag.name) ? 'primary' : 'info'"
+                  :type="isSearchTag(tag) ? 'primary' : 'info'"
                   class="cursor-pointer"
                   @click="toggleTag(tag)"
                 >
@@ -69,10 +69,10 @@
 <script setup>
 import { ref, onMounted, nextTick, inject, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { cloneDeep, isEmpty } from 'lodash'
+import { cloneDeep, isEmpty, findIndex } from 'lodash'
 import { VueDraggable } from 'vue-draggable-plus'
 
-defineProps({
+const props = defineProps({
   searchTags: Array
 })
 
@@ -122,7 +122,7 @@ function fetchUnGroupTagsData() {
 }
 
 function toggleTag(tag) {
-  emit('toggleTag', tag.name)
+  emit('toggleTag', tag)
 }
 function onSort() {
   groupTags.value.forEach((group, index) => {
@@ -139,6 +139,15 @@ function onSort() {
   nextTick(() => {
     draging.value = false
   })
+}
+
+function isSearchTag(tag) {
+  if (props.searchTags) {
+    const isInclude = findIndex(props.searchTags, { $loki: tag.$loki })
+    if (isInclude !== -1) return true
+  }
+
+  return false
 }
 
 const emit = defineEmits(['toggleTag'])

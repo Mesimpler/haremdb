@@ -12,10 +12,10 @@
         <TagSelect
           v-model="searchTags"
           placeholder="搜索图片标签..."
+          :allow-create="false"
           size="default"
           clearable
           class="flex-1"
-          tag-type="primary"
         />
 
         <el-select
@@ -109,7 +109,7 @@
 <script setup>
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { cloneDeep, debounce } from 'lodash'
+import { findIndex, cloneDeep, debounce } from 'lodash'
 
 import HeroDialog from './component/HeroDialog.vue'
 import TagSelect from '@components/TagSelect.vue'
@@ -145,10 +145,10 @@ const sortBy = computed(() => ({
   order: sortOptions.value.selectOrder.order
 }))
 
-function toggleTag(tagName) {
-  const index = searchTags.value.indexOf(tagName)
+function toggleTag(tag) {
+  const index = findIndex(searchTags.value, { $loki: tag.$loki })
   if (index === -1) {
-    searchTags.value.push(tagName)
+    searchTags.value.push(tag)
   } else {
     searchTags.value.splice(index, 1)
   }
