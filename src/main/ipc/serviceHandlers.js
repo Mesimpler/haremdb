@@ -8,19 +8,21 @@ import _ from 'lodash'
 export default function registerServiceHandlers(ipcMain) {
   ipcMain.on('ondragstart', (event, filePath) => {
     try {
-      const image = nativeImage.createFromPath(filePath)
+      const appRoot = is.dev
+        ? path.join(app.getAppPath())
+        : path.join(path.dirname(app.getPath('exe')))
+
+      const absoluteFilePath = path.isAbsolute(filePath) ? filePath : path.join(appRoot, filePath)
+
+      const image = nativeImage.createFromPath(absoluteFilePath)
       const resizedImage = image.resize({ width: 126 })
 
       event.sender.startDrag({
         icon: resizedImage,
-        file: filePath
+        file: absoluteFilePath
       })
     } catch (error) {
       console.error(error)
-      event.sender.startDrag({
-        icon: filePath,
-        file: filePath
-      })
     }
   })
 
