@@ -11,9 +11,9 @@
   justify-content: center;
   align-items: center;
   position: absolute;
-  width: 340px;
+  width: 400px;
   top: 0;
-  right: 200px;
+  right: 160px;
   opacity: 0;
   z-index: 999;
   background-color: var(--el-color-primary);

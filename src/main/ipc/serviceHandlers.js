@@ -1,10 +1,11 @@
-import { nativeImage } from 'electron'
+import { app, nativeImage } from 'electron'
+import { is } from '@electron-toolkit/utils'
 import path from 'path'
 import fg from 'fast-glob'
 import fs from 'fs'
 import _ from 'lodash'
 
-export default function registerDragHandlers(ipcMain) {
+export default function registerServiceHandlers(ipcMain) {
   ipcMain.on('ondragstart', (event, filePath) => {
     try {
       const image = nativeImage.createFromPath(filePath)
@@ -49,5 +50,13 @@ export default function registerDragHandlers(ipcMain) {
     })
 
     return results
+  })
+
+  ipcMain.handle('getAppRoot', async () => {
+    const appRoot = is.dev
+      ? path.join(app.getAppPath())
+      : path.join(path.dirname(app.getPath('exe')))
+
+    return appRoot
   })
 }

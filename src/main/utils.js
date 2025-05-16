@@ -63,14 +63,11 @@ export function collectTheKey(obj, keysToCollect) {
  */
 export async function moveCardToDB(filePath, reserveSourceFile = true) {
   const uniqueFileName = `hdb_${Date.now()}_${Math.floor(Math.random() * 1000)}${path.extname(filePath)}`
+  const relativeFilePath = path.join('repo', uniqueFileName)
 
   let fileRepoPath = null
-  if (is.dev) {
-    fileRepoPath = path.join(app.getAppPath(), 'repo', uniqueFileName)
-  } else {
-    const exeDir = path.dirname(app.getPath('exe'))
-    fileRepoPath = path.join(exeDir, 'repo', uniqueFileName)
-  }
+  const appRoot = is.dev ? app.getAppPath() : path.dirname(app.getPath('exe'))
+  fileRepoPath = path.join(appRoot, relativeFilePath)
 
   if (reserveSourceFile) {
     await fse.copy(filePath, fileRepoPath)
@@ -78,7 +75,7 @@ export async function moveCardToDB(filePath, reserveSourceFile = true) {
     await fse.move(filePath, fileRepoPath)
   }
 
-  return fileRepoPath
+  return relativeFilePath
 }
 
 /**

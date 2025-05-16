@@ -1,4 +1,5 @@
 import { useClosure, moveCardToDB, moveModToGame } from '../utils'
+import path from 'path'
 import _ from 'lodash'
 import fse from 'fs-extra'
 
@@ -673,6 +674,32 @@ export default function registerTagHandlers(ipcMain, mainWindow, db) {
       return {
         isSuccess: false,
         msg: '删除图像失败',
+        data: error
+      }
+    }
+  })
+
+  // 更新图像路径
+  ipcMain.handle('db:update-image-path', async () => {
+    try {
+      const cards = imagesCol().find({})
+
+      cards.forEach((card) => {
+        card.path = path.join('repo', path.basename(card.path))
+      })
+
+      imagesCol().update(cards)
+
+      return {
+        isSuccess: true,
+        msg: '更新图像路径成功',
+        data: null
+      }
+    } catch (error) {
+      console.error(error)
+      return {
+        isSuccess: false,
+        msg: '更新图像路径失败',
         data: error
       }
     }

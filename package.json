@@ -1,6 +1,6 @@
 {
   "name": "haremdb",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "你的恋活人物卡管理器 ",
   "main": "./out/main/index.js",
   "author": "https://github.com/Mesimpler",

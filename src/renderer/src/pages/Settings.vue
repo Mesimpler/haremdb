@@ -7,9 +7,7 @@
             <el-button icon="Folder" @click="showFolderPicker" />
           </template>
         </el-input>
-        <el-text type="info" size="small">
-          当你没有填写此项时，拖拽mod将不会为您复制到游戏mods文件夹
-        </el-text>
+        <el-text type="info" size="small">当你没有填写此项时, 拖拽mod操作将被拒绝</el-text>
       </el-form-item>
       <el-form-item label="添加卡片或zipmod时行为: ">
         <div>
@@ -18,6 +16,15 @@
             <el-radio :value="false">移动</el-radio>
           </el-radio-group>
           <el-text type="info" size="small" class="block">添加卡片和zipmod时是否保留源文件</el-text>
+        </div>
+      </el-form-item>
+
+      <el-form-item label="更新card路径">
+        <div>
+          <el-button :loading="updateCardPathLoading" size="small" @click="clickUpdateCard">
+            开始更新
+          </el-button>
+          <el-text type="info" size="small" class="block">如果你的卡片显示正常请勿点击</el-text>
         </div>
       </el-form-item>
 
@@ -45,6 +52,7 @@
 </template>
 
 <script setup>
+import { ElMessage } from 'element-plus'
 import { inject, onMounted, ref } from 'vue'
 
 const settings = inject('app-settings', {})
@@ -68,6 +76,23 @@ onMounted(async () => {
 
 function openLinkBrowser(url) {
   window.electron.ipcRenderer.invoke('openExternalLink', url)
+}
+const updateCardPathLoading = ref(false)
+function clickUpdateCard() {
+  updateCardPathLoading.value = true
+  window.electron.ipcRenderer
+    .invoke('db:update-image-path')
+    .then((result) => {
+      if (result.isSuccess) {
+        ElMessage.success(result.msg)
+      } else {
+        ElMessage.error(result.msg)
+        console.error(result.data)
+      }
+    })
+    .finally(() => {
+      updateCardPathLoading.value = false
+    })
 }
 </script>
 

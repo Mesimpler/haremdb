@@ -1,5 +1,5 @@
 <template>
-  <WindowsDragBar class="!w-260px !opacity-0" />
+  <WindowsDragBar />
   <el-config-provider
     :locale="zhCn"
     size="small"
